@@ -117,4 +117,16 @@ public class PageVO {
         System.out.println("endPage : " + endPage);
         System.out.println("totalPage : " + totalPage);       
     }
+    //displayRow 출력할 행수, totalCount 전체 행수, page:현재 페이지 5, 21, 4
+    public boolean nextPageScore() {
+    	boolean next=false;
+    	int totalPage = (int)Math.ceil(totalCount/(double)displayRow);//5
+        
+        if(totalPage<page+1){
+            next = false;//다음페이지 보이지않도록
+        }else{
+            next = true;
+        }
+        return next;
+    }
 }
