@@ -16,7 +16,7 @@
 </style>
 <main>
 <h2>도서 상세</h2>
-<form action="bEdit" method="post"  enctype="multipart/form-data" id="uploadForm" name="uploadForm" >
+<form action="book?cmd=edit" method="post"  enctype="multipart/form-data" id="uploadForm" name="uploadForm" >
 	<input type="hidden" value="${vo.bno}" name="bno">
 	<table class="table table-sm table-bordered">
 		<tr>
@@ -70,7 +70,7 @@
 			<th>도서 이미지</th>
 			<td class="disp" >
 				<c:if test="${vo.saveFilename!=null}">
-					<img src="imgDown?upload=${vo.savePath}&saveFname=${vo.saveFilename}&originFname=${vo.srcFilename}" alt="" height="300px">
+					<img src="book?cmd=imgDown&upload=${vo.savePath}&saveFname=${vo.saveFilename}&originFname=${vo.srcFilename}" alt="" height="300px">
 				</c:if>				
 			</td>
 			<td class="edit" style="display:none;">
@@ -91,7 +91,7 @@
 		</tr>
 	</table>
 	<div class="btn_rud">
-		<button type="button" id="btnList" onclick="location.href='bList?page=${page}&searchword=${searchword}&searchtype=${searchtype}'" class="btn btn-success" >도서목록</button>
+		<button type="button" id="btnList" onclick="location.href='book?cmd=list&page=${page}&searchword=${searchword}&searchtype=${searchtype}'" class="btn btn-success" >도서목록</button>
 		<c:if test="${sessionScope.mvo.grade=='a'}">
 			<button type="button" id="btnEdit" onclick="bookEdit()" class="btn btn-warning" >도서수정</button>
 	 		<button type="button" id="btnDelete" onclick="bookDelete()" class="btn btn-danger" >도서삭제</button> 
@@ -123,7 +123,7 @@
 	//도서 삭제
 	function bookDelete(){
 		if(confirm("도서삭제를 수행 하시겠습니까?")){
-			location.href="bDelete?bno=${vo.bno}";
+			location.href="book?cmd=del&bno=${vo.bno}";
 		}
 	}
 	//도서저장
