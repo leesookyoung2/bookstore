@@ -9,7 +9,7 @@
 </style>
 <main>
 	<h2>도서 등록</h2>
-	<form action="bNew" method="post" id="uploadForm" enctype="multipart/form-data" >
+	<form action="book?cmd=new" method="post" id="uploadForm" enctype="multipart/form-data" >
 		<table class="table table-sm table-bordered">
 			<tr>
 				<th>도서제목</th>

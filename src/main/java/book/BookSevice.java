@@ -5,13 +5,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.oreilly.servlet.MultipartRequest;
 import com.oreilly.servlet.multipart.DefaultFileRenamePolicy;
 
@@ -20,7 +24,7 @@ import util.PageVO;
 public class BookSevice {
 	private HttpServletRequest request;
 	private HttpServletResponse response;
-	private final String path="/WEB-INF/jsp/book/";
+	private final String path="/WEB-INF/views/book/";
 	public BookSevice(HttpServletRequest request, HttpServletResponse response) {
 		this.request=request;this.response=response;
 	}
@@ -28,7 +32,7 @@ public class BookSevice {
 	public String exec() throws IOException {
 		String cmd=request.getParameter("cmd");
 		String view =null;
-		if(cmd.equals("list"))
+		if(cmd == null || cmd.equals("list"))
 			view=BookListService();
 		else if(cmd.equals("view"))
 			view=BookViewService();
@@ -40,7 +44,95 @@ public class BookSevice {
 			view=BookDeleteService();
 		else if(cmd.equals("imgDown"))
 			BookImgDownService();
+		else if(cmd.equals("getstar"))
+			GetStarService();
+		else if(cmd.equals("savestar"))
+			SaveStarService();
 		return view;
+	}
+
+	private void SaveStarService() throws IOException {
+		// 파라메타 값 받기
+				String id=request.getParameter("id");
+				if(id==null || id=="")id="hong1";
+				String strbno=request.getParameter("bno");
+				System.out.println("bno:"+strbno);
+				int bno=39;
+				if(strbno!=null && strbno!="")bno=Integer.parseInt(strbno);
+				String strscore=request.getParameter("score").trim();
+				double score=0;
+				if(strscore!=null && strscore!="")score=Double.parseDouble(strscore);
+				String cmt=request.getParameter("cmt");
+				// dao 객체 생성
+				BookscoreDAO dao=BookscoreDAO.getInstance();
+				// vo 객체 생성
+				BookscoreVO vo=new BookscoreVO(0, bno, id, score, cmt, null);
+				// dao 삽입 메소드 수행
+				dao.insertBookscore(vo);
+				//페이지 이동 필요 없다 
+				// 비동기 통신 메소드를 다 수행하고나면 불렀던 곳으로 돌아가서 callback 호출
+				//반환해줄 데이터가 있다.
+				//BookscoreDAO 객체 필요
+				BookscoreDAO sdao=BookscoreDAO.getInstance();
+				ArrayList<Number> scoreS=sdao.getAvgScore(bno);
+				System.out.println("score.get(0)="+scoreS.get(0));
+				System.out.println("score.get(1)="+scoreS.get(1));
+				//json data 보내 주자
+				JsonObject ob=new JsonObject();
+				ob.addProperty("avgScore", scoreS.get(0));
+				ob.addProperty("cnt", scoreS.get(1));
+				response.setContentType("application/json;charset=utf-8");
+				PrintWriter out=response.getWriter();
+				out.print(ob);
+				out.flush();
+				out.close();
+		
+	}
+
+	private void GetStarService() throws IOException {
+		int bno=39;
+		String strbno=request.getParameter("bno").trim();
+		if(strbno!=null && strbno!="")bno=Integer.parseInt(strbno);
+		int page=1;
+		String strpage=request.getParameter("page").trim();
+		if(strpage!=null && strpage!="")page=Integer.parseInt(strpage);
+		// 페이지 
+		BookscoreDAO dao=BookscoreDAO.getInstance();
+		// 특정 도서(bno값) 전체 개수 세기 
+		int rowCnt=dao.getRowCount(bno);
+		// 다음페이지가 있을지??
+		//int page, int totalCount, int displayRow, int displayPage
+		int displayRow=5;
+		PageVO pvo=new PageVO(page, rowCnt, displayRow, 0);
+		boolean next=pvo.nextPageScore();
+		System.out.println("next="+next);
+		//해당페이지 검색하기
+		List<BookscoreVO> list=dao.getBookScore(page,bno,displayRow);	
+		//json 데이터를 조립해서 호출쪽으로 출력해 준다.
+		//json데이터 조립 :gson 라이브러리 사용
+		JsonObject jObj=new JsonObject();
+		jObj.addProperty("next", next);//더보기버튼 활성화
+		//list를 json array로 만들기
+		JsonArray arr=new JsonArray();
+		//json 객체 만들기
+		JsonObject data=null;
+		for(BookscoreVO vo:list) {
+			data=new JsonObject();
+			data.addProperty("score", vo.getScore());
+			data.addProperty("id", vo.getId());
+			data.addProperty("cmt", vo.getCmt());
+			arr.add(data);
+		}
+		jObj.add("arr", arr);
+		//Gson gson=new Gson();
+		//System.out.println(gson.toJson(jObj));
+		//보내기 전에 encoding
+		response.setContentType("application/json;charset=utf-8");
+		PrintWriter out=response.getWriter();
+		out.print(jObj);
+		out.flush();
+		out.close();
+		
 	}
 
 	private void BookImgDownService() throws IOException {

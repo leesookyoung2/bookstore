@@ -7,7 +7,7 @@ import javax.servlet.http.HttpSession;
 public class MemberSevice {
 	private HttpServletRequest request;
 	private HttpServletResponse response;
-	private final String path="/WEB-INF/jsp/member/";
+	private final String path="/WEB-INF/views/member/";
 	public MemberSevice(HttpServletRequest request, HttpServletResponse response) {
 		this.request=request;this.response=response;
 	}
